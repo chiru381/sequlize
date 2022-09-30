@@ -1,10 +1,10 @@
 const bcrypt = require("bcrypt");
 const _ = require("lodash");
+const validator = require("email-validator")
 
 const db = require("../service/db.service");
 // const sendEmailuser = require("../utils/sendEmailuser");
 const User = db.User;
-const validator = require("email-validator")
 
 
 exports.userCreation = async (req, res) => {
@@ -65,3 +65,65 @@ exports.userCreation = async (req, res) => {
     }
 }
 
+exports.getallUsers = (req, res) => {
+    User.findAll()
+    .then((User) => {
+      res.status(200).json({
+        responseCode: 200,
+        message: "Get all User Success",
+        UserList: User,
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.status(400).json({
+        responseCode: 400,
+        message: "Error in getting all users",
+        error: error,
+      });
+    });
+};
+
+exports.userUpdate = (req, res) => {
+    console.log(req.body)
+    let created_dateTime = new Date();
+    let year = created_dateTime.getFullYear();
+    let month = ("0" + (created_dateTime.getMonth() + 1)).slice(-2);
+    let day = ("0" + created_dateTime.getDate()).slice(-2);
+    let hour = created_dateTime.getHours();
+    let minute = created_dateTime.getMinutes();
+    let seconds = created_dateTime.getSeconds();
+    created_dateTime =
+    year + "-" + month + "-" + day + " " + hour + ":" + minute + ":" + seconds;
+    // console.log("creating");
+    let user_id = req.body.user_id;
+  
+    User.update( {
+      first_name: req.body.first_name,
+      last_name: req.body.last_name, 
+      email: req.body.email,
+      phone_number: req.body.phone_number,
+      created_date: created_dateTime,
+      updated_date: created_dateTime,
+      status: 'active',
+    }, {where : { user_id: user_id},}
+    )
+    .then(User => {
+      if (User) {
+        res.status(200).send({
+          responseCode: 200,
+          message: "updated successfully."
+        });
+      } else {
+        res.status(400).send({
+        errorMessage: `Cannot update user with user_id=${user_id}. Maybe user_id was not found or req.body is empty!`
+      });
+    }
+  })
+  .catch(err => {
+    res.status(500).send({
+      responseCode: 500,
+      errorMessage: "Error updating user with user_id=" + user_id
+    });
+  });
+};
