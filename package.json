@@ -16,8 +16,11 @@
     "email-validator": "^2.0.4",
     "express": "^4.18.1",
     "helmet": "^6.0.0",
+    "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.21",
     "mysql2": "^2.3.3",
+    "node-datetime": "^2.1.2",
+    "nodemailer": "^6.8.0",
     "pg": "^8.7.3",
     "sequelize": "^6.19.0"
   }

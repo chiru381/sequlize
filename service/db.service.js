@@ -20,6 +20,7 @@ db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
 db.User = require('../models/UserSchema')(sequelize, Sequelize);
+db.Otp = require('../models/OtpSchema')(sequelize, Sequelize);
 
 // db.Otp.belongsTo(db.User, { as: "UserSchema", foreignKey: "user_key" });
 
