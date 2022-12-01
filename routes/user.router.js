@@ -15,4 +15,9 @@ router.post("/check-userid",  userRoute.userValidater);
 router.post("/jwtlogin",userRoute.jwtuserlogin);
 router.post("/validateotp", userRoute.otpuser);
 
+router.post("/download", userRoute.download);
+router.post("/getparameters", userRoute.parameter);
+router.post("/get_mw_codes", userRoute.mwfunctionsandcode);
+router.post("/get_mw_filenames",  userRoute.mwfilename);
+
 module.exports = router;

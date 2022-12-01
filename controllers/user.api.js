@@ -2,10 +2,17 @@ const bcrypt = require("bcrypt");
 const _ = require("lodash");
 const validator = require("email-validator")
 const dateTime = require("node-datetime")
+var AWS = require("aws-sdk");
+var fs = require("fs");
 
 const db = require("../service/db.service");
 const User = db.User;
 const Otp = db.Otp;
+const Parameters = db.Parameters;
+const Mw_code = db.Mw_codefolders;
+const Mw_function = db.Mw_functions;
+const Mwfilenames = db.mwfilenames
+
 const sendEmail = require("../utils/sendEmail");
 const auth = require("../utils/auth");
 // const sendEmailuser = require("../utils/sendEmailuser");
@@ -406,3 +413,134 @@ exports.jwtuserlogin = async (req, res) => {
       })
     }
 };
+
+exports.download = async (req, res) => {
+  const params = await Parameters.findAll();
+  console.log(params, '...1')
+  if (!params)
+    return res.status(400).json({
+      responseCode: 400,
+      errorMessage: "parameters not found",
+    });
+
+  const codefolder = await Mw_code.findOne({ where: { function_code: req.body.function_code } });
+console.log(codefolder, '......2')
+  if (!codefolder) {
+    res.status(400).json({
+      responseCode: 400,
+      errorMessage: "mw_code_folders with given id not found",
+    });
+  } else {
+    AWS.config.update({
+      accessKeyId: params[0].s3_accesskey,
+      secretAccessKey: params[0].s3_secret_accesskey,
+      region: params[0].s3_region,
+    });
+    var s3 = new AWS.S3();
+    var options = {
+      Bucket: params[0].s3_bucket,
+      Key: codefolder.code_path_s3_key,
+    };
+
+    var fileStream = s3.getObject(options).createReadStream();
+    fileStream.pipe(res)
+
+    // if (fileStream) {
+    //   res.status(200).json({
+    //     responseCode: 200,
+    //     message: "download successfully done",
+    //     filestream: fileStream,
+    //     });
+    //   } else {
+    //     res.status(400).json({
+    //       responseCode: 400,
+    //       message: "download getting error",
+    //       error: error,
+    //     });
+    //   }
+  }
+};
+
+exports.parameter = async (req, res) => {
+  const user = await User.findOne({ where: {user_id: req.body.user_id } });
+  if (!user) {
+    return res.status(400).json({
+      responseCode: 400,
+      errorMessage: "user with given user_id not found",
+    });
+  } else {
+    Parameters.findAll()
+    .then((Parameters) => {
+      res.status(200).json({
+        responseCode: 200,
+        message: "Get all parameters Success",
+        mw_params: Parameters,
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.status(400).json({
+        responseCode: 400,
+        message: "Error in getting all parameters",
+        error: error,
+      });
+    });
+  }
+}
+
+exports.mwfunctionsandcode = async (req, res) => {
+  const user = await User.findOne({ where: {user_id: req.body.user_id } });
+  if (!user) {
+    return res
+    .status(400)
+    .json({
+      responseCode: 400,
+      errorMessage: "user with given user_id not found",
+    });
+  } else {
+    var mw_function = await Mw_function.findAll()
+    var mw_codemaster = await Mw_code.findAll()
+    var functioncode = mw_function && mw_codemaster
+    if (functioncode) {
+      res.status(200).json({
+        responseCode: 200,
+        message: "Get all mw_functions and mw_codemasters Success",
+        mw_functions: mw_function,
+        mw_codes: mw_codemaster,
+      });
+    } else {
+      res.status(400).json({
+        responseCode: 400,
+        message: "Error in getting all mw_functions and mw_codemasters",
+        error: error,
+      });
+    }
+  }
+}
+
+exports.mwfilename = async (req, res) => {
+  const user = await User.findOne({ where: {user_id: req.body.user_id } });
+  if (!user) {
+    return res.status(400).json({
+      responseCode: 400,
+      errorMessage: "user with given user_id not found",
+    });
+  } else {
+    Mwfilenames.findAll()
+    .then((Mwfilenames) => {
+      res.status(200).json({
+        responseCode: 200,
+        message: "Get all filenames Success",
+        mw_filenames: Mwfilenames,
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.status(400).json({
+        responseCode: 400,
+        message: "Error in getting all filenames",
+        error: error,
+      });
+    });
+  }
+}
