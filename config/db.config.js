@@ -1,7 +1,7 @@
 const db = {
     database: 'postgres9',
     username: 'postgres',
-    password: 'chiru123',
+    password: 'Chiru@123',
     host: 'localhost',
       dialect: 'postgres',
       pool: {
